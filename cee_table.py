@@ -100,6 +100,74 @@ def ResolveRedirects(server, title):
 	except Exception as e:
 		print "".join(traceback.format_exception(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2]))
 
+def PublishStats():
+	max_line = 80.0
+	t=u''
+	t=t+u'{{Notice|This page is updated daily by robot around midnight UTC}}' +'\n'
+	t=t+u'Auto generated at '+ strftime("%Y-%m-%d %H:%M:%S", gmtime())+' UTC' +'\n'
+
+	t=t+'''
+* [[Wikimedia CEE Spring 2015/Structure/Table]] (Albania, Armenia, Austria, Azerbaijan, Belarus)
+* [[Wikimedia CEE Spring 2015/Structure/Table2]] (Bosnia and Herzegovina, Bulgaria, Croatia, Cyprus, Czech Republic)
+* [[Wikimedia CEE Spring 2015/Structure/Table3]] (Estonia, Georgia, Greece, Hungary, Kazakhstan)
+* [[Wikimedia CEE Spring 2015/Structure/Table4]] (Latvia, Lithuania, Macedonia, Moldova, Montenegro)
+* [[Wikimedia CEE Spring 2015/Structure/Table5]] (Poland, Romania, Russia, Serbia)
+* [[Wikimedia CEE Spring 2015/Structure/Table6]] (Slovakia, Slovenia, Turkey, Ukraine)
+* [[Wikimedia CEE Spring 2015/Structure/Statistics]]
+'''
+	t += u'== Article lists statistics ==\n'
+	t += u":''What could be more stupid than assessing contribution to Wikipedia by counting number of created articles? Only the automatic calculation of these figures.''\n"
+
+	t += u'=== Articles in proposition lists by country ===\n'
+	t += u'{|\n'
+	s1max = max(stats_orig_list.values())
+	point = 1.0 * max_line / s1max
+	if point > 1:
+		point = 1
+#	for co in sorted(stats_orig_list):
+	for co in sorted(stats_orig_list.keys(), lambda x,y:stats_orig_list[y]-stats_orig_list[x]):
+		rep = int(round(point * stats_orig_list[co]))
+		if stats_orig_list[co] > 0 and rep == 0:
+			rep = 1
+		t += u'|-\n'
+		t += u'| '+co+' || '+str(stats_orig_list[co])+' || '+(u'▒' * rep) + '\n'
+	t += u'|}\n'		
+
+	t += u'=== New articles by countries ===\n'
+	t += u'{|\n'
+	s2max = max(stats_by_country.values())
+	point = 1.0 * max_line / s2max
+	if point > 1:
+		point = 1
+	#for co in sorted(stats_by_country):
+	for co in sorted(stats_by_country.keys(), lambda x,y:stats_by_country[y]-stats_by_country[x]):
+		rep = int(round(point * stats_by_country[co]))
+		if stats_by_country[co] > 0 and rep == 0:
+			rep = 1
+		t += u'|-\n'
+		t += u'| '+co+' || '+str(stats_by_country[co])+' || '+(u'▒' * rep) + '\n'
+	t += u'|}\n'
+
+	t += u'=== New articles by languages ===\n'
+	t += u'{|\n'
+	s3max = max(stats_by_lang.values())
+	point = 1.0 * max_line / s3max
+	if point > 1:
+		point = 1
+	#for la in sorted(stats_by_lang):
+	for la in sorted(stats_by_lang.keys(), lambda x,y:stats_by_lang[y]-stats_by_lang[x]):
+		rep = int(round(point * stats_by_lang[la]))
+		if stats_by_lang[la] > 0 and rep == 0:
+			rep = 1
+		t += u'|-\n'
+		t += u'| '+'{{H:title|'+lang_names[la]+u'|'+la.replace(u'be-tarask',u'be-t')+u'}}'+' || '+str(stats_by_lang[la])+' || '+(u'▒' * rep) + '\n'
+	t += u'|}\n'
+
+	if debug==0:
+		savePage('Wikimedia_CEE_Spring_2015/Structure/Statistics', t)
+	else:
+		savePage('User:Botik/Stats', t)
+
 try:
 	f = open('/home/ajvol/pywikibot/forenames/cee_cache.txt', 'r')
 	cache = json.load(f)
@@ -116,16 +184,23 @@ langs = ['az', 'ba', 'be', 'be-tarask', 'bg', 'bs', 'ce', 'cs', 'cv', 'de', 'el'
 lang_names = {'az':u'Azerbaijani - azərbaycan dili', 'ba':u'Bashkir - башҡорт теле', 'be':u'Belarusian - беларуская мова', 'be-tarask':u'Belarusian (Taraškievica) - беларуская мова (тарашкевіца)', 'bg':u'Bulgarian - български език', 'bs':u'Bosnian - bosanski jezik', 'ce':u'Chechen - нохчийн мотт', 'crh':u'Crimean Tatar - Къырым Татар', 'cs':u'Czech - čeština', 'cv':u'Chuvash - чӑваш чӗлхи', 'de':'German - Deutsche', 'el':u'Greek - ελληνικά', 'et':u'Estonian - eesti', 'hr':u'Croatian - hrvatski jezik', 'hu':u'Hungarian - magyar', 'hy':u'Armenian - Հայերեն', 'ka':u'Georgian - ქართული', 'kk':u'Kazakh - қазақ тілі', 'lt':u'Lithuanian - lietuvių kalba', 'lv':u'Latvian - latviešu valoda', 'mk':u'Macedonian - македонски јазик', 'os':u'Ossetian - ирон æвзаг', 'pl':u'Polish - polszczyzna', 'ro':u'Romanian - limba română', 'ru':u'Russian - русский язык', 'rue':u'Rusyn - 	русин', 'sk':u'Slovak - slovenčina', 'sl':u'Slovene - slovenščina', 'sq':u'Albanian - Shqip', 'sr':u'Serbian - српски језик', 'tr':u'Turkish - Türkçe', 'tt':u'Tatar - татар теле', 'uk':u'Ukrainian - українська мова'}
 
 
-debug=1
+debug=0
 
 objects = {'Table': ['Albania', 'Armenia', 'Austria', 'Azerbaijan', 'Belarus'], 'Table2': ['Bosnia and Herzegovina', 'Bulgaria', 'Croatia', 'Cyprus', 'Czech Republic'], 'Table3': ['Estonia', 'Georgia', 'Greece', 'Hungary', 'Kazakhstan'], 'Table4': ['Latvia', 'Lithuania', 'Macedonia', 'Moldova', 'Montenegro'], 'Table5': ['Poland', 'Romania', 'Russia', 'Serbia'], 'Table6': ['Slovakia', 'Slovenia', 'Turkey', 'Ukraine'] }
 
 if debug==1:
-	objects = {'Table': ['Poland'] }
+	objects = {'Table': ['Austria', 'Albania'] }
 
 stats_orig_list = {}
 stats_by_country = {}
 stats_by_lang = {}
+
+for obj in sorted(objects):
+	for country in sorted(objects[obj]):
+		stats_orig_list[country] = 0
+		stats_by_country[country] = 0
+for lang in langs:
+	stats_by_lang[lang] = 0
 
 for obj in sorted(objects):
 	print('=========='+obj)	
@@ -141,6 +216,7 @@ for obj in sorted(objects):
 * [[Wikimedia CEE Spring 2015/Structure/Table4]] (Latvia, Lithuania, Macedonia, Moldova, Montenegro)
 * [[Wikimedia CEE Spring 2015/Structure/Table5]] (Poland, Romania, Russia, Serbia)
 * [[Wikimedia CEE Spring 2015/Structure/Table6]] (Slovakia, Slovenia, Turkey, Ukraine)
+* [[Wikimedia CEE Spring 2015/Structure/Statistics]]
 
 {| class="wikitable"
 |-
@@ -345,7 +421,7 @@ for obj in sorted(objects):
 				if 'en' not in item_label_dict or 'en' not in item_link_dict or item_label_dict['en']=='':
 					if en_title != '':
 							txt=txt+ u'| '+en_title+'\n'
-							print(en_title)					
+							print(en_title)
 					else:
 						if art != '':
 							txt=txt+ u'| '+art+'\n'
@@ -360,9 +436,11 @@ for obj in sorted(objects):
 
 				if q=='-1':
 					txt=txt+ u'| '+'\n'
+					stats_orig_list[country] += 1
 				else:
 					txt=txt+ u'| style="background:#fff8dc"| ' + u'[[:d:'+q+u'|'+q+u']]'+'\n'
 					print(q)
+					stats_orig_list[country] += 1
 		
 
 				for key in sorted(item_label_dict):
@@ -383,6 +461,8 @@ for obj in sorted(objects):
 							else:
 								# green
 								txt=txt+ u'| style="background:#98FB98"|[[:'+key.replace('be-tarask','be-x-old')+u':'+ item_link_dict[key] + u'|***]]'+'\n'
+								stats_by_country[country] += 1
+								stats_by_lang[key] += 1
 			except Exception as e:
 				print "".join(traceback.format_exception(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2]))
 		txt=txt+ '|}'+'\n'
@@ -391,6 +471,13 @@ for obj in sorted(objects):
 		savePage('Wikimedia_CEE_Spring_2015/Structure/'+obj, txt)
 	else:
 		savePage('User:Botik/'+obj, txt)
+
+
+print(stats_orig_list)
+print(stats_by_country)
+print(stats_by_lang)
+
+PublishStats()
 
 try:
 	f = open('/home/ajvol/pywikibot/forenames/cee_cache.txt', 'w')
