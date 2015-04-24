@@ -1,6 +1,8 @@
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 #https://meta.wikimedia.org/w/index.php?title=Wikimedia_CEE_Spring_2015
 
+import traceback
 import urllib2
 import json
 import re
@@ -78,34 +80,67 @@ def getLastEdit(server, title):
 		
 	return datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
 
-f = open('./cee_cache.txt', 'r')
-cache = json.load(f)
-f.close()
+def ResolveRedirects(server, title):
+	#http://lt.wikipedia.org/w/api.php?action=query&titles=Riga&redirects
+
+	try:
+		if 'r:'+server+':'+title in cache:
+			return cache['r:'+server+':'+title]
+		
+		co_list_req = urllib2.Request("http://"+server.replace('be-tarask','be-x-old')+".wikipedia.org/w/api.php?format=json&action=query&titles="+urllib2.quote(title.encode('utf-8'))+"&redirects&continue=")
+		co_list_resp = urllib2.build_opener().open(co_list_req).read()
+		co_list_json = json.loads(co_list_resp)
+
+		if 'redirects' in co_list_json["query"]:
+			cache['r:'+server+':'+title]=co_list_json["query"]["redirects"][0]["to"]
+			return co_list_json["query"]["redirects"][0]["to"]
+		else:
+			cache['r:'+server+':'+title]=title
+			return title
+	except Exception as e:
+		print "".join(traceback.format_exception(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2]))
+
+try:
+	f = open('/home/ajvol/pywikibot/forenames/cee_cache.txt', 'r')
+	cache = json.load(f)
+	f.close()
+except:
+	cache = {}
+	print ('cache load error')
 
 UTF8Writer = codecs.getwriter('utf8')
 sys.stdout = UTF8Writer(sys.stdout)
 
 
-langs = ['az', 'ba', 'be', 'be-tarask', 'bg', 'bs', 'ce', 'cs', 'cv', 'de', 'el', 'et', 'hr', 'hu', 'hy', 'ka', 'kk', 'lt', 'lv', 'mk', 'os', 'pl', 'ro', 'ru', 'sk', 'sl', 'sq', 'sr', 'tr', 'uk']
-
-lang_names = {'az':u'Azerbaijani - azərbaycan dili', 'ba':u'Bashkir - башҡорт теле', 'be':u'Belarusian - беларуская мова', 'be-tarask':u'Belarusian (Taraškievica) - беларуская мова (тарашкевіца)', 'bg':u'Bulgarian - български език', 'bs':u'Bosnian - bosanski jezik', 'ce':u'Chechen - нохчийн мотт', 'crh':u'Crimean Tatar - Къырым Татар', 'cs':u'Czech - čeština', 'cv':u'Chuvash - чӑваш чӗлхи', 'de':'German - Deutsche', 'el':u'Greek - ελληνικά', 'et':u'Estonian - eesti', 'hr':u'Croatian - hrvatski jezik', 'hu':u'Hungarian - magyar', 'hy':u'Armenian - Հայերեն', 'ka':u'Georgian - ქართული', 'kk':u'Kazakh - қазақ тілі', 'lt':u'Lithuanian - lietuvių kalba', 'lv':u'Latvian - latviešu valoda', 'mk':u'Macedonian - македонски јазик', 'os':u'Ossetian - ирон æвзаг', 'pl':u'Polish - polszczyzna', 'ro':u'Romanian - limba română', 'ru':u'Russian - русский язык', 'rue':u'Rusyn - 	русин', 'sk':u'Slovak - slovenčina', 'sl':u'Slovene - slovenščina', 'sq':u'Albanian - Shqip', 'sr':u'Serbian - српски језик', 'tr':u'Turkish - Türkçe', 'uk':u'Ukrainian - українська мова'}
-
-#countries = ['Bulgaria','Bosnia and Herzegovina']
-#countries = ['Albania']
+langs = ['az', 'ba', 'be', 'be-tarask', 'bg', 'bs', 'ce', 'cs', 'cv', 'de', 'el', 'et', 'hr', 'hu', 'hy', 'ka', 'kk', 'lt', 'lv', 'mk', 'os', 'pl', 'ro', 'ru', 'sk', 'sl', 'sq', 'sr', 'tr', 'tt', 'uk']
+lang_names = {'az':u'Azerbaijani - azərbaycan dili', 'ba':u'Bashkir - башҡорт теле', 'be':u'Belarusian - беларуская мова', 'be-tarask':u'Belarusian (Taraškievica) - беларуская мова (тарашкевіца)', 'bg':u'Bulgarian - български език', 'bs':u'Bosnian - bosanski jezik', 'ce':u'Chechen - нохчийн мотт', 'crh':u'Crimean Tatar - Къырым Татар', 'cs':u'Czech - čeština', 'cv':u'Chuvash - чӑваш чӗлхи', 'de':'German - Deutsche', 'el':u'Greek - ελληνικά', 'et':u'Estonian - eesti', 'hr':u'Croatian - hrvatski jezik', 'hu':u'Hungarian - magyar', 'hy':u'Armenian - Հայերեն', 'ka':u'Georgian - ქართული', 'kk':u'Kazakh - қазақ тілі', 'lt':u'Lithuanian - lietuvių kalba', 'lv':u'Latvian - latviešu valoda', 'mk':u'Macedonian - македонски јазик', 'os':u'Ossetian - ирон æвзаг', 'pl':u'Polish - polszczyzna', 'ro':u'Romanian - limba română', 'ru':u'Russian - русский язык', 'rue':u'Rusyn - 	русин', 'sk':u'Slovak - slovenčina', 'sl':u'Slovene - slovenščina', 'sq':u'Albanian - Shqip', 'sr':u'Serbian - српски језик', 'tr':u'Turkish - Türkçe', 'tt':u'Tatar - татар теле', 'uk':u'Ukrainian - українська мова'}
 
 
-objects = {'Table': ['Albania', 'Armenia', 'Austria', 'Azerbaijan', 'Belarus', 'Bosnia and Herzegovina', 'Bulgaria', 'Croatia', 'Czech Republic', 'Cyprus'], 'Table2': ['Estonia', 'Georgia', 'Greece', 'Hungary', 'Kazakhstan', 'Latvia'], 'Table3': ['Lithuania', 'Macedonia', 'Moldova', 'Montenegro', 'Poland', 'Romania', 'Russia', 'Serbia', 'Slovakia', 'Slovenia', 'Turkey', 'Ukraine'] }
+debug=1
+
+objects = {'Table': ['Albania', 'Armenia', 'Austria', 'Azerbaijan', 'Belarus'], 'Table2': ['Bosnia and Herzegovina', 'Bulgaria', 'Croatia', 'Cyprus', 'Czech Republic'], 'Table3': ['Estonia', 'Georgia', 'Greece', 'Hungary', 'Kazakhstan'], 'Table4': ['Latvia', 'Lithuania', 'Macedonia', 'Moldova', 'Montenegro'], 'Table5': ['Poland', 'Romania', 'Russia', 'Serbia'], 'Table6': ['Slovakia', 'Slovenia', 'Turkey', 'Ukraine'] }
+
+if debug==1:
+	objects = {'Table': ['Poland'] }
+
+stats_orig_list = {}
+stats_by_country = {}
+stats_by_lang = {}
 
 for obj in sorted(objects):
 	print('=========='+obj)	
 
 	txt=u''
+	txt=txt+u'{{Notice|This page is updated daily by robot around midnight UTC}}' +'\n'
 	txt=txt+u'Auto generated at '+ strftime("%Y-%m-%d %H:%M:%S", gmtime())+' UTC' +'\n'
 
 	txt=txt+'''
-* [[Wikimedia CEE Spring 2015/Structure/Table]] (Albania - Armenia - Austria - Azerbaijan - Belarus - Bosnia and Herzegovina - Bulgaria - Croatia - Czech Republic - Cyprus)
-* [[Wikimedia CEE Spring 2015/Structure/Table2]] (Estonia - Georgia - Greece - Hungary - Kazakhstan - Latvia)
-* [[Wikimedia CEE Spring 2015/Structure/Table3]] (Lithuania - Macedonia - Moldova - Montenegro - Poland - Romania - Russia - Serbia - Slovakia - Slovenia - Turkey - Ukraine)
+* [[Wikimedia CEE Spring 2015/Structure/Table]] (Albania, Armenia, Austria, Azerbaijan, Belarus)
+* [[Wikimedia CEE Spring 2015/Structure/Table2]] (Bosnia and Herzegovina, Bulgaria, Croatia, Cyprus, Czech Republic)
+* [[Wikimedia CEE Spring 2015/Structure/Table3]] (Estonia, Georgia, Greece, Hungary, Kazakhstan)
+* [[Wikimedia CEE Spring 2015/Structure/Table4]] (Latvia, Lithuania, Macedonia, Moldova, Montenegro)
+* [[Wikimedia CEE Spring 2015/Structure/Table5]] (Poland, Romania, Russia, Serbia)
+* [[Wikimedia CEE Spring 2015/Structure/Table6]] (Slovakia, Slovenia, Turkey, Ukraine)
 
 {| class="wikitable"
 |-
@@ -118,18 +153,23 @@ for obj in sorted(objects):
 | style="background:#FFFF00" | yellow || old unchanged articles
 |}
 '''
+
 	for country in sorted(objects[obj]):
+		q_list = list()
+		
 		print('+++++++++++'+country)		
 
 		txt=txt+ u'== '+country+ u' =='+'\n'
+		
+		txt=txt+ u":''Source list: [[Wikimedia_CEE_Spring_2015/Structure/" + country + u"]]''"+'\n'
 
 		txt=txt+ u'{| class="wikitable"'+'\n'
 		txt=txt+ u'|-'+'\n'
-
-		txt=txt+ u'! {{H:title|English article|en}}'+'\n'
-		txt=txt+ u'! wikidata'+'\n'
+	
+		txt=txt+ u'! style="width:20em" | {{H:title|English article|en}}'+'\n'
+		txt=txt+ u'! style="width:6em" | wikidata'+'\n'
 		for key in sorted(langs):
-			txt=txt+ (u'! {{H:title|'+lang_names[key]+u'|'+key+u'}}') +'\n'
+			txt=txt+ u'! {{H:title|'+lang_names[key]+u'|'+key.replace(u'be-tarask',u'be-t')+u'}}' +u'\n'
 
 		try:
 			co_list_req = urllib2.Request("http://meta.wikimedia.org/w/api.php?format=json&action=query&prop=revisions&rvprop=content&titles=Wikimedia_CEE_Spring_2015/Structure/"+urllib2.quote(country)+"&continue=")
@@ -146,9 +186,15 @@ for obj in sorted(objects):
 		for line in wiki_text.split('\n'):
 			#print line
 			l=''
+			l_res=''
 			art=''
+			art_res=''
 			q=''
 			r_url = ''
+			en_title=''
+
+			line = re.sub(r'\[\[File:.*?\]\]', r'', line)
+			line = re.sub(r'\[\[Image:.*?\]\]', r'', line)
 
 			#<h3 style="color:#339966;">[[File:P art-green.png|30px]] '''a. Culture'''</h3>
 			match = re.search(ur"<h3(.*)'''(.*?)'''</h3>", line)
@@ -184,45 +230,79 @@ for obj in sorted(objects):
 				q = match.group(1).strip()
 				q = 'Q'+q
 
+			#  # [[:en:Theater of Armenia|'''Theater of Armenia''']]
+			match = re.search(ur"^\#(.*?)\[\[\:?(.{2,9}?)\:(.+?)\|(.+?)\]\]", line) 
+			if match is not None and not (line[0]=='|' and country=='Estonia') and not country=='Greece':
+				l=match.group(2).strip()
+				art=match.group(3).strip()
+				if l=='en':
+					en_title=art.replace('_',' ')
+
 			else:
-				#  # [[:en:Theater of Armenia|'''Theater of Armenia''']]
-				match = re.search(ur"\#(.*?)\[\[\:?(.{2,9}?)\:(.+?)\|(.+?)\]\]", line) 
+				# ([[:hy:Հայկական թատրոն|hy]],...)
+				match = re.search(ur"\(\[\[\:(.{2,9}?)\:(.+?)\|(.+?)\]\]", line) 
 				if match is not None and not (line[0]=='|' and country=='Estonia'):
-					l=match.group(2).strip()
-					art=match.group(3).strip()
-
+					l=match.group(1).strip()
+					art=match.group(2).strip()
+					if l=='en':
+						en_title=art.replace('_',' ')						
 				else:
-					# ([[:hy:Հայկական թատրոն|hy]],...)
-					match = re.search(ur"\(\[\[\:(.{2,9}?)\:(.+?)\|(.+?)\]\]", line) 
-					if match is not None and not (line[0]=='|' and country=='Estonia'):
-						l=match.group(1).strip()
+					# |[[w:en:Jakub Wujek Bible|Jakub Wujek Bible]]
+					match = re.search(ur"\|(.*)\[\[\w?:en\:(.+?)\|(.+?)\]\]", line) 
+					if match is not None and country=='Poland':
+						l='en'
 						art=match.group(2).strip()
-					else:
-						# |[[w:en:Jakub Wujek Bible|Jakub Wujek Bible]]
-						match = re.search(ur"\|(.*)\[\[\w?:en\:(.+?)\|(.+?)\]\]", line) 
+						en_title=art.replace('_',' ')
+					else:	
+						# | [[File:Poland-orb.png|10px]][[w:pl:Grabarka (góra)|Grabarka (góra)]]
+						match = re.search(ur"\|(.*)Poland-orb.png(.*)\[\[\w?:pl\:(.+?)\|(.+?)\]\]", line)
 						if match is not None and country=='Poland':
-							l='en'
-							art=match.group(2).strip()
+							l='pl'
+							art=match.group(3).strip()
 						else:	
-							# | [[File:Poland-orb.png|10px]][[w:pl:Grabarka (góra)|Grabarka (góra)]]
-							match = re.search(ur"\|(.*)Poland-orb.png(.*)\[\[\w?:pl\:(.+?)\|(.+?)\]\]", line)
-							if match is not None and country=='Poland':
-								l='pl'
-								art=match.group(3).strip()				
+							# #[[:en:Theatre of ancient Greece]]
+							match = re.search(ur"\#( )*\[\[\:?(.{2,9}?)\:(.+?)\]\]", line) 
+							if match is not None:
+								l=match.group(2).strip()
+								art=match.group(3).strip()	
+								if l=='en':
+									en_title=art.replace('_',' ')										
 
+			if en_title == '':
+				match = re.search(ur"'''(.+?)'''", line) 
+				if match is not None:
+					en_title=match.group(1).strip()
+
+
+			# reserve 
+			# ([[:hy:Հայկական թատրոն|hy]],...)
+			match = re.search(ur"\(\[\[\:(.{2,9}?)\:(.+?)\|(.+?)\]\]", line) 
+			if match is not None and not (line[0]=='|' and country=='Estonia'):
+				l_res=match.group(1).strip()
+				art_res=match.group(2).strip()
+									
 			if q!='':
 				r_url = "http://www.wikidata.org/w/api.php?format=json&action=wbgetentities&ids="+q+"&props=labels|sitelinks"
 			elif q=='' and l!='':
+				art=ResolveRedirects(l, art)
 				r_url = "http://www.wikidata.org/w/api.php?format=json&action=wbgetentities&sites="+l+"wiki&titles="+urllib2.quote(art.encode('utf-8'))+"&props=labels|sitelinks"
 			else:
 				continue
-
-			print (q+':'+l+':'+art)
-		
+	
 			item_req = urllib2.Request(r_url)
 			item_resp = urllib2.build_opener().open(item_req).read()
 			item_json = json.loads(item_resp)		
 
+			# we use reserve, if English article is absent
+			if l_res!='' and ((not "entities" in item_json) or ('-1' in item_json["entities"])):
+				art_res=ResolveRedirects(l_res, art_res)
+				r_url = "http://www.wikidata.org/w/api.php?format=json&action=wbgetentities&sites="+l_res+"wiki&titles="+urllib2.quote(art_res.encode('utf-8'))+"&props=labels|sitelinks"
+				item_req = urllib2.Request(r_url)
+				item_resp = urllib2.build_opener().open(item_req).read()
+				item_json = json.loads(item_resp)
+				art = art_res
+				l = l_res 
+				
 			item_label_dict = {}
 			item_link_dict = {}
 
@@ -232,42 +312,57 @@ for obj in sorted(objects):
 					item_label_dict[la] = ''
 					item_link_dict[la] = ''
 
-				for q in item_json["entities"]:
-					if q == '-1':
+				for q2 in item_json["entities"]:
+					if q2 == '-1':
 						continue
+					q = q2
 
-					for item_label in item_json["entities"][q]["labels"]:
-						item_label_lang = item_json["entities"][q]["labels"][item_label]["language"]
-						item_label_value = item_json["entities"][q]["labels"][item_label]["value"]
-				
-						if item_label_lang in langs or item_label_lang=='en':
-							item_label_dict[item_label_lang] = item_label_value
+				if q in q_list:
+					continue
+				elif q <> '':
+					q_list.append(q)
 
+				for item_label in item_json["entities"][q]["labels"]:
+					item_label_lang = item_json["entities"][q]["labels"][item_label]["language"]
+					item_label_value = item_json["entities"][q]["labels"][item_label]["value"]
+			
+					if item_label_lang in langs or item_label_lang=='en':
+						item_label_dict[item_label_lang] = item_label_value
+
+				if "sitelinks" in item_json["entities"][q]:
 					for item_link in item_json["entities"][q]["sitelinks"]:
 						item_link_lang = item_json["entities"][q]["sitelinks"][item_link]["site"]
 						item_link_lang = item_link_lang.replace('wiki','')
 						item_link_lang = item_link_lang.replace('be_x_old','be-tarask')
 						item_link_value = item_json["entities"][q]["sitelinks"][item_link]["title"]
-				
+			
 						if item_link_lang in langs or item_link_lang=='en':
 							item_link_dict[item_link_lang] = item_link_value
 
 
 				txt=txt+ u'|-'+'\n'
 
-				if 'en' not in item_label_dict or item_label_dict['en']=='':
-					if art <> '':
-						txt=txt+ u'| '+art+'\n'
+				if 'en' not in item_label_dict or 'en' not in item_link_dict or item_label_dict['en']=='':
+					if en_title != '':
+							txt=txt+ u'| '+en_title+'\n'
+							print(en_title)					
 					else:
-						inverse = [(value, key) for key, value in item_label_dict.items()]
-						txt=txt+ u'| '+max(inverse)[0]+'\n'
+						if art != '':
+							txt=txt+ u'| '+art+'\n'
+							print(art)
+						else:
+							inverse = [(value, key) for key, value in item_label_dict.items()]
+							txt=txt+ u'| '+max(inverse)[0]+'\n'
+							print(max(inverse)[0])
 				else:
 					txt=txt+ u'| style="background:#fff8dc"| ' + u'[[:en:'+ item_link_dict['en'] + u'|'+item_label_dict['en']+u']]'+'\n'
+					print (item_label_dict['en'])
 
 				if q=='-1':
 					txt=txt+ u'| '+'\n'
 				else:
 					txt=txt+ u'| style="background:#fff8dc"| ' + u'[[:d:'+q+u'|'+q+u']]'+'\n'
+					print(q)
 		
 
 				for key in sorted(item_label_dict):
@@ -288,13 +383,18 @@ for obj in sorted(objects):
 							else:
 								# green
 								txt=txt+ u'| style="background:#98FB98"|[[:'+key.replace('be-tarask','be-x-old')+u':'+ item_link_dict[key] + u'|***]]'+'\n'
-			except:
-				print 'error'
+			except Exception as e:
+				print "".join(traceback.format_exception(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2]))
 		txt=txt+ '|}'+'\n'
 
-	#savePage('Wikimedia_CEE_Spring_2015/Structure/'+obj, txt)
-	savePage('User:Botik/'+obj, txt)
+	if debug==0:
+		savePage('Wikimedia_CEE_Spring_2015/Structure/'+obj, txt)
+	else:
+		savePage('User:Botik/'+obj, txt)
 
-f = open('./cee_cache.txt', 'w')
-json.dump(cache, f)
-f.close()
+try:
+	f = open('/home/ajvol/pywikibot/forenames/cee_cache.txt', 'w')
+	json.dump(cache, f)
+	f.close()
+except:
+	print('Faild to save cache')
