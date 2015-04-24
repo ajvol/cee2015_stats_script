@@ -15,39 +15,31 @@ import requests
 
 def savePage(title, content):
 	user    = 'Botik'
-	passw   = urllib2.quote('fantom%botik')
+	passw   = urllib2.quote(getPasswd())
 	baseurl = 'https://meta.wikimedia.org/w/'
 	params  = '?action=login&lgname=%s&lgpassword=%s&format=json'% (user,passw)
 	summary='auto update'
 	 
 	# Login request
 	r1 = requests.post(baseurl+'api.php'+params)
-	token = r1.json()['login']['token']
+	login_token = r1.json()['login']['token']
 
 	#login confirm
-	params2 = params+'&lgtoken=%s'% token
-	r2 = requests.post(baseurl+'api.php'+params2,cookies=r1.cookies)
+	params2 = params+'&lgtoken=%s'% login_token
+	r2 = requests.post(baseurl+'api.php'+params2, cookies=r1.cookies)
 	
-	#get timestamp
-	timestamp=''
-	r3 =  requests.get(baseurl+'api.php'+'?format=json&action=query&prop=revisions&titles='+title+'&rvprop=timestamp&continue=', cookies=r2.cookies)
-	ts_json = json.loads(r3.text)
-	try:
-		for itm in ts_json["query"]["pages"]:
-			timestamp=ts_json["query"]["pages"][itm]["revisions"][0]["timestamp"]	
-	except:
-		timestamp=''
+	#get edit token
+	r3 = requests.get(baseurl+'api.php'+'?format=json&action=query&meta=tokens&continue=', cookies=r2.cookies)
+	edit_token = r3.json()['query']['tokens']['csrftoken']
 
-	#get token
-	r4 = requests.get(baseurl+'api.php'+'?format=json&action=query&meta=tokens&continue=', cookies=r3.cookies)
-	token2 = r4.json()['query']['tokens']['csrftoken']
-	print(token2)
+	edit_cookie = r2.cookies.copy()
+	edit_cookie.update(r3.cookies)
 
 	# save action
 	headers = {'content-type': 'application/x-www-form-urlencoded'}
-	payload = {'format': 'json', 'action': 'edit', 'title': title, 'summary': summary, 'text': content, 'basetimestamp': timestamp, 'token': token2}
-	r5 = requests.post(baseurl+'api.php', data=payload, headers=headers, cookies=r4.cookies)
-	print (r5.text)
+	payload = {'format': 'json', 'action': 'edit', 'title': title, 'summary': summary, 'text': content, 'token': edit_token}
+	r4 = requests.post(baseurl+'api.php', data=payload, headers=headers, cookies=edit_cookie)
+	print (r4.text)
 
 def getFirstEdit(server, title):
 	timestamp=''
@@ -65,6 +57,15 @@ def getFirstEdit(server, title):
 		timestamp='2000-01-01T00:00:01Z'
 		
 	return datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
+
+def getPasswd():
+	try:
+		f = open('passwd.txt', 'r')
+		p = f.read()
+		f.close()
+		return p
+	except:
+		print ('passwd load error')	
 
 def getLastEdit(server, title):
 	timestamp=''
