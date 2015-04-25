@@ -37,7 +37,7 @@ def savePage(title, content):
 
 	# save action
 	headers = {'content-type': 'application/x-www-form-urlencoded'}
-	payload = {'format': 'json', 'action': 'edit', 'title': title, 'summary': summary, 'text': content, 'token': edit_token}
+	payload = {'format': 'json', 'assert': 'user', 'action': 'edit', 'title': title, 'summary': summary, 'text': content, 'token': edit_token}
 	r4 = requests.post(baseurl+'api.php', data=payload, headers=headers, cookies=edit_cookie)
 	print (r4.text)
 
@@ -61,7 +61,7 @@ def getFirstEdit(server, title):
 def getPasswd():
 	try:
 		f = open('passwd.txt', 'r')
-		p = f.read()
+		p = f.read().rstrip() 
 		f.close()
 		return p
 	except:
