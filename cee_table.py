@@ -156,10 +156,12 @@ def PublishStats():
     t += u'|}\n'
 
     t += u'=== New articles timeline ===\n'
-    for i in sorted(stats_by_date, reverse=True):
-        itm = i.strftime("%Y-%m-%d %H:%M:%S")
-        itm += ' [[:w:'+stats_by_date[i]+']]'
+    for i, date in enumerate(sorted(stats_by_date, reverse=True)):
+        itm = date.strftime("%Y-%m-%d %H:%M:%S")
+        itm += ' [[:w:'+stats_by_date[date]+']]'
         t += u'* '+ itm+'\n'
+        if i>=1000:
+            break
 
     if debug == 0:
         savePage('Wikimedia_CEE_Spring_2016/Structure/Statistics', t)
