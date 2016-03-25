@@ -212,11 +212,10 @@ lang_names = {'sh': 'Serbo-Croatian - srpskohrvatski jezik', 'eo': u'Esperanto',
 debug = 0
 
 objects = {
-    'Table': ['Albania', 'Armenia', 'Austria', 'Azerbaijan', 'Belarus', 'Bosnia and Herzegovina', 'Bulgaria', 'Croatia',
-              'Czech Republic', 'Estonia', 'Georgia', 'Esperantujo',
+    'Table': ['Albania', 'Armenia', 'Austria', 'Azerbaijan', 'Bashkortostan', 'Belarus', 'Bulgaria', 'Croatia',
+              'Czech Republic', 'Esperantujo', 'Estonia', 'Georgia',
               'Greece', 'Hungary', 'Latvia', 'Lithuania', 'Macedonia', 'Moldova', 'Poland', 'Romania', 'Russia',
-              'Republika Srpska', 'Serbia',
-              'Slovakia', 'Ukraine']}
+              'Republika Srpska', 'Serbia', 'Slovakia', 'Ukraine']}
 
 if debug == 1:
     objects = {'Table': ['Serbia']}
@@ -242,8 +241,7 @@ for obj in sorted(objects):
 
         try:
             co_list_req = urllib2.Request(
-                "http://meta.wikimedia.org/w/api.php?format=json&action=query&prop=revisions&rvprop=content&titles=Wikimedia_CEE_Spring_2016/Structure/" + urllib2.quote(
-                    country) + "&continue=")
+                "http://meta.wikimedia.org/w/api.php?format=json&action=query&prop=revisions&rvprop=content&titles=Wikimedia_CEE_Spring_2016/Structure/" + urllib2.quote(country) + "&continue=")
             co_list_resp = urllib2.build_opener().open(co_list_req).read()
             co_list_json = json.loads(co_list_resp)
             # print "http://meta.wikimedia.org/w/api.php?format=json&action=query&prop=revisions&rvprop=content&titles=Wikimedia_CEE_Spring_2015/Structure/"+country+"&continue="
