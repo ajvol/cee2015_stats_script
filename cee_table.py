@@ -121,6 +121,22 @@ def PublishStats():
 
     t += u":''What could be more stupid than assessing contribution to Wikipedia by counting number of created articles? Only the automatic calculation of these figures.''\n"
 
+
+
+    t += u'=== New articles total ===\n'
+    t += u'{|\n'
+    total = sum(stats_by_country.values())
+    total2015 = 2838
+    max_val = max([total, total2015])
+    point = 1.0 * max_line / max_val
+    rep = int(round(point * total2015))
+    t += u'|-\n'
+    t += u'| 2015 CEE Spring articles || ' + str(total2015) + ' || ' + (u'▒' * rep) + '\n'
+    rep = int(round(point * total))
+    t += u'|-\n'
+    t += u'| 2016 CEE Spring articles || ' + str(total) + ' || ' + (u'▒' * rep) + '\n'
+    t += u'|}\n'
+
     t += u'=== Articles about countries ===\n'
     t += u'{|\n'
     s2max = max(stats_by_country.values())
