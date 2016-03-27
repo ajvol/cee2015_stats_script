@@ -182,6 +182,32 @@ def PublishStats():
         savePage('User:Botik/Stats', t)
 
 
+def get_country_qs(country):
+    try:
+        co_list_req = urllib2.Request(
+            "http://meta.wikimedia.org/w/api.php?format=json&action=query&prop=revisions&rvprop=content&titles=Wikimedia_CEE_Spring_2016/Structure/" + urllib2.quote(
+                country) + "&continue=")
+        co_list_resp = urllib2.build_opener().open(co_list_req).read()
+        co_list_json = json.loads(co_list_resp)
+        # print "http://meta.wikimedia.org/w/api.php?format=json&action=query&prop=revisions&rvprop=content&titles=Wikimedia_CEE_Spring_2015/Structure/"+country+"&continue="
+
+        for itm in co_list_json["query"]["pages"]:
+            wiki_text = co_list_json["query"]["pages"][itm]["revisions"][0]["*"]
+    except Exception as e:
+        print("".join(traceback.format_exception(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])))
+        continue
+
+    qs = list()
+    mat = ''
+    for line in wiki_text.split('\n'):
+        # {{#invoke:WikimediaCEETable|table|Q948201|Q834689}}
+        match = re.search(ur'\{\{\#invoke\:WikimediaCEETable\|table\|(.*)\}\}', line, re.IGNORECASE)
+        if match is not None:
+            mat = match.group(1).strip()
+            qs += mat.split('|')
+    return qs
+
+
 try:
     f = open('./cee_cache.txt', 'r')
     cache = json.load(f)
@@ -211,116 +237,91 @@ lang_names = {'sh': 'Serbo-Croatian - srpskohrvatski jezik', 'eo': u'Esperanto',
 
 debug = 0
 
-objects = {
-    'Table': ['Albania', 'Armenia', 'Austria', 'Azerbaijan', 'Bashkortostan', 'Belarus', 'Bulgaria', 'Croatia',
+countries = ['Albania', 'Armenia', 'Austria', 'Azerbaijan', 'Bashkortostan', 'Belarus', 'Bulgaria', 'Croatia',
               'Czech Republic', 'Esperantujo', 'Estonia', 'Georgia',
               'Greece', 'Hungary', 'Latvia', 'Lithuania', 'Macedonia', 'Moldova', 'Poland', 'Romania', 'Russia',
-              'Republika Srpska', 'Serbia', 'Slovakia', 'Ukraine']}
+              'Republika Srpska', 'Serbia', 'Slovakia', 'Ukraine']
 
 if debug == 1:
-    objects = {'Table': ['Serbia']}
+    countries = ['Serbia']
 
 stats_orig_list = {}
 stats_by_country = {}
 stats_by_lang = {}
 stats_by_date = {}
 
-for obj in sorted(objects):
-    for country in sorted(objects[obj]):
-        stats_orig_list[country] = 0
-        stats_by_country[country] = 0
+for country in sorted(countries):
+    stats_orig_list[country] = 0
+    stats_by_country[country] = 0
 for lang in langs:
     stats_by_lang[lang] = 0
 
-for obj in sorted(objects):
+for country in sorted(countries):
+    q_list = list()
 
-    for country in sorted(objects[obj]):
-        q_list = list()
+    print('+++++++++++' + country)
+    qs = get_country_qs(country)
 
-        print('+++++++++++' + country)
+    for q in qs:
+        print (q)
+
+        r_url = "http://www.wikidata.org/w/api.php?format=json&action=wbgetentities&ids=" + q + "&props=labels|sitelinks"
+
+        item_req = urllib2.Request(r_url)
+        item_resp = urllib2.build_opener().open(item_req).read()
+        item_json = json.loads(item_resp)
+
+        item_label_dict = {}
+        item_link_dict = {}
 
         try:
-            co_list_req = urllib2.Request(
-                "http://meta.wikimedia.org/w/api.php?format=json&action=query&prop=revisions&rvprop=content&titles=Wikimedia_CEE_Spring_2016/Structure/" + urllib2.quote(country) + "&continue=")
-            co_list_resp = urllib2.build_opener().open(co_list_req).read()
-            co_list_json = json.loads(co_list_resp)
-            # print "http://meta.wikimedia.org/w/api.php?format=json&action=query&prop=revisions&rvprop=content&titles=Wikimedia_CEE_Spring_2015/Structure/"+country+"&continue="
 
-            for itm in co_list_json["query"]["pages"]:
-                wiki_text = co_list_json["query"]["pages"][itm]["revisions"][0]["*"]
+            for la in langs:
+                item_label_dict[la] = ''
+                item_link_dict[la] = ''
+
+            for q2 in item_json["entities"]:
+                if q2 == '-1':
+                    continue
+                q = q2
+
+            if q in q_list:
+                continue
+            elif q != '':
+                q_list.append(q)
+
+            for item_label in item_json["entities"][q]["labels"]:
+                item_label_lang = item_json["entities"][q]["labels"][item_label]["language"]
+                item_label_value = item_json["entities"][q]["labels"][item_label]["value"]
+
+                if item_label_lang in langs or item_label_lang == 'en':
+                    item_label_dict[item_label_lang] = item_label_value
+
+            if "sitelinks" in item_json["entities"][q]:
+                for item_link in item_json["entities"][q]["sitelinks"]:
+                    item_link_lang = item_json["entities"][q]["sitelinks"][item_link]["site"]
+                    item_link_lang = item_link_lang.replace('wiki', '')
+                    item_link_lang = item_link_lang.replace('be_x_old', 'be-tarask')
+                    item_link_value = item_json["entities"][q]["sitelinks"][item_link]["title"]
+
+                    if item_link_lang in langs or item_link_lang == 'en':
+                        item_link_dict[item_link_lang] = item_link_value
+
+            if q == '-1':
+                stats_orig_list[country] += 1
+            else:
+                stats_orig_list[country] += 1
+
+            for key in sorted(item_label_dict):
+                if (key != 'en') and (len(item_link_dict[key]) > 1):
+                    fe = getFirstEdit(key, item_link_dict[key])
+
+                    if fe >= datetime.strptime('2016-03-21', "%Y-%m-%d"):
+                        stats_by_country[country] += 1
+                        stats_by_lang[key] += 1
+                        stats_by_date[fe] = key+':'+item_link_dict[key]
         except Exception as e:
             print("".join(traceback.format_exception(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])))
-            continue
-
-        qs = []
-        mat = ''
-        for line in wiki_text.split('\n'):
-            # {{#invoke:WikimediaCEETable|table|Q948201|Q834689}}
-            match = re.search(ur'\{\{\#invoke\:WikimediaCEETable\|table\|(.*)\}\}', line, re.IGNORECASE)
-            if match is not None:
-                mat = match.group(1).strip()
-                qs += mat.split('|')
-
-        for q in qs:
-            print (q)
-
-            r_url = "http://www.wikidata.org/w/api.php?format=json&action=wbgetentities&ids=" + q + "&props=labels|sitelinks"
-
-            item_req = urllib2.Request(r_url)
-            item_resp = urllib2.build_opener().open(item_req).read()
-            item_json = json.loads(item_resp)
-
-            item_label_dict = {}
-            item_link_dict = {}
-
-            try:
-
-                for la in langs:
-                    item_label_dict[la] = ''
-                    item_link_dict[la] = ''
-
-                for q2 in item_json["entities"]:
-                    if q2 == '-1':
-                        continue
-                    q = q2
-
-                if q in q_list:
-                    continue
-                elif q != '':
-                    q_list.append(q)
-
-                for item_label in item_json["entities"][q]["labels"]:
-                    item_label_lang = item_json["entities"][q]["labels"][item_label]["language"]
-                    item_label_value = item_json["entities"][q]["labels"][item_label]["value"]
-
-                    if item_label_lang in langs or item_label_lang == 'en':
-                        item_label_dict[item_label_lang] = item_label_value
-
-                if "sitelinks" in item_json["entities"][q]:
-                    for item_link in item_json["entities"][q]["sitelinks"]:
-                        item_link_lang = item_json["entities"][q]["sitelinks"][item_link]["site"]
-                        item_link_lang = item_link_lang.replace('wiki', '')
-                        item_link_lang = item_link_lang.replace('be_x_old', 'be-tarask')
-                        item_link_value = item_json["entities"][q]["sitelinks"][item_link]["title"]
-
-                        if item_link_lang in langs or item_link_lang == 'en':
-                            item_link_dict[item_link_lang] = item_link_value
-
-                if q == '-1':
-                    stats_orig_list[country] += 1
-                else:
-                    stats_orig_list[country] += 1
-
-                for key in sorted(item_label_dict):
-                    if (key != 'en') and (len(item_link_dict[key]) > 1):
-                        fe = getFirstEdit(key, item_link_dict[key])
-
-                        if fe >= datetime.strptime('2016-03-21', "%Y-%m-%d"):
-                            stats_by_country[country] += 1
-                            stats_by_lang[key] += 1
-                            stats_by_date[fe] = key+':'+item_link_dict[key]
-            except Exception as e:
-                print("".join(traceback.format_exception(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])))
 
 
 PublishStats()
