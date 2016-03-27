@@ -45,6 +45,14 @@ def savePage(title, content):
 
     print(r4.text)
 
+def getPasswd():
+    try:
+        f = open('passwd.txt', 'r')
+        p = f.read().rstrip()
+        f.close()
+        return p
+    except:
+        print('passwd load error')
 
 def getFirstEdit(server, title):
     timestamp = ''
@@ -64,19 +72,9 @@ def getFirstEdit(server, title):
 
     return datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
 
-
-def getPasswd():
-    try:
-        f = open('passwd.txt', 'r')
-        p = f.read().rstrip()
-        f.close()
-        return p
-    except:
-        print('passwd load error')
-
-
 def getLastEdit(server, title):
     timestamp = ''
+
     co_list_req = urllib2.Request("http://" + server + ".wikipedia.org/w/api.php?format=json&action=query&prop=revisions&titles=" + urllib2.quote(
         title.encode('utf-8')) + "&rvlimit=1&rvprop=timestamp&rvdir=older&continue=")
     co_list_resp = urllib2.build_opener().open(co_list_req).read()
@@ -217,6 +215,14 @@ except:
     cache = {}
     print('cache load error')
 
+try:
+    f = open('./cee_cache_last_edit.txt', 'r')
+    cache_le = json.load(f)
+    f.close()
+except:
+    cache_le = {}
+    print('cache_le load error')
+
 UTF8Writer = codecs.getwriter('utf8')
 sys.stdout = UTF8Writer(sys.stdout)
 
@@ -246,6 +252,12 @@ countries = ['Albania', 'Armenia', 'Austria', 'Azerbaijan', 'Bashkortostan', 'Be
 if debug == 1:
     countries = ['Serbia']
 
+# once a day full processing
+if datetime.datetime.now().hour in [0,1]:
+    full_processing = True
+else:
+    full_processing = False
+
 stats_orig_list = {}
 stats_by_country = {}
 stats_by_lang = {}
@@ -259,6 +271,7 @@ for lang in langs:
 
 for country in sorted(countries):
     q_list = list()
+    country_items = list()
 
     print('+++++++++++' + country)
     qs = get_country_qs(country)
@@ -308,19 +321,39 @@ for country in sorted(countries):
                     if item_link_lang in langs or item_link_lang == 'en':
                         item_link_dict[item_link_lang] = item_link_value
 
-            if q == '-1':
-                stats_orig_list[country] += 1
-            else:
-                stats_orig_list[country] += 1
+            stats_orig_list[country] += 1
 
             for key in sorted(item_label_dict):
                 if (key != 'en') and (len(item_link_dict[key]) > 1):
-                    fe = getFirstEdit(key, item_link_dict[key])
+                    first_edit = getFirstEdit(key, item_link_dict[key])
 
-                    if fe >= datetime.strptime('2016-03-21', "%Y-%m-%d"):
+                    if (first_edit >= datetime.strptime('2016-03-21', "%Y-%m-%d")) and (first_edit <= datetime.strptime('2016-05-29', "%Y-%m-%d")):
                         stats_by_country[country] += 1
                         stats_by_lang[key] += 1
-                        stats_by_date[fe] = key+':'+item_link_dict[key]
+                        stats_by_date[first_edit] = key + ':' + item_link_dict[key]
+
+                    # old articles
+                    elif (first_edit < datetime.strptime('2016-03-21', "%Y-%m-%d")) and full_processing:
+
+                        if key + ':' + item_link_dict[key] in cache_le:
+                            last_edit = cache_le[key + ':' + item_link_dict[key]]
+                        else:
+                            last_edit = getLastEdit(key, item_link_dict[key])
+
+                        if (last_edit >= datetime.strptime('2016-03-21', "%Y-%m-%d")) and (last_edit <= datetime.strptime('2016-05-29', "%Y-%m-%d")):
+                            # changed old article (orange)
+
+                            # запоминаем, что статья уже менялась после начала конкурса
+                            cache_le[key + ':' + item_link_dict[key]] = last_edit
+                            print 'o'
+                            #country_items.append({'q': q, 'name': item_label_dict["en"], 'edit_time': 'old changed'})
+                            #txt = txt + u'| style="background:#ffc757"|[[:' + key + u':' + item_link_dict[key] + u'|***]]' + '\n'
+                        elif last_edit < datetime.strptime('2016-03-21', "%Y-%m-%d"):
+                            # unchanged old article (yellow)
+                            print 'y'
+                            #txt = txt + u'| style="background:#FFFF00"|[[:' + key + u':' + item_link_dict[key] + u'|***]]' + '\n'
+
+
         except Exception as e:
             print("".join(traceback.format_exception(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])))
 
@@ -333,3 +366,10 @@ try:
     f.close()
 except:
     print('Failed to save cache')
+
+try:
+    f = open('./cee_cache_le.txt', 'w')
+    json.dump(cache_le, f)
+    f.close()
+except:
+    print('Failed to save cache_le')
