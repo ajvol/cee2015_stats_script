@@ -137,7 +137,7 @@ def PublishStats():
     t += u'| 2016 CEE Spring articles || ' + str(total) + ' || ' + (u'▒' * rep) + '\n'
     t += u'|}\n'
 
-    t += u'=== Articles about countries ===\n'
+    t += u'=== New articles about countries ===\n'
     t += u'{|\n'
     s2max = max(stats_by_country.values())
     point = 1.0 * max_line / s2max
@@ -152,7 +152,7 @@ def PublishStats():
         t += u'| ' + co + ' || ' + str(stats_by_country[co]) + ' || ' + (u'▒' * rep) + '\n'
     t += u'|}\n'
 
-    t += u'=== Articles by languages ===\n'
+    t += u'=== New articles by languages ===\n'
     t += u'{|\n'
     s3max = max(stats_by_lang.values())
     point = 1.0 * max_line / s3max
@@ -168,7 +168,7 @@ def PublishStats():
             stats_by_lang[la]) + ' || ' + (u'▒' * rep) + '\n'
     t += u'|}\n'
 
-    t += u'=== New articles timeline ===\n'
+    t += u'=== Last new articles ===\n'
     for i, date in enumerate(sorted(stats_by_date, reverse=True)):
         itm = date.strftime("%Y-%m-%d %H:%M:%S")
         itm += ' [[:w:'+stats_by_date[date]+']]'
@@ -322,10 +322,6 @@ for obj in sorted(objects):
             except Exception as e:
                 print("".join(traceback.format_exception(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])))
 
-print(stats_orig_list)
-print(stats_by_country)
-print(stats_by_lang)
-print(stats_by_date)
 
 PublishStats()
 
