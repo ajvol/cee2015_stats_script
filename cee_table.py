@@ -322,7 +322,7 @@ for country in sorted(countries):
     qs = get_country_qs(country)
 
     for q in qs:
-        print (q)
+        print q + " ",
 
         r_url = "http://www.wikidata.org/w/api.php?format=json&action=wbgetentities&ids=" + q + "&props=labels|sitelinks"
 
