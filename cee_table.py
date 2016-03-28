@@ -194,11 +194,11 @@ def get_country_qs(country):
             wiki_text = co_list_json["query"]["pages"][itm]["revisions"][0]["*"]
     except Exception as e:
         print("".join(traceback.format_exception(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2])))
-        continue
 
     qs = list()
     mat = ''
     for line in wiki_text.split('\n'):
+        # === Culture ===
         # {{#invoke:WikimediaCEETable|table|Q948201|Q834689}}
         match = re.search(ur'\{\{\#invoke\:WikimediaCEETable\|table\|(.*)\}\}', line, re.IGNORECASE)
         if match is not None:
