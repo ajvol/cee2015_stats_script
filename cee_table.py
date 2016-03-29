@@ -244,7 +244,7 @@ def get_county_list():
     mat = ''
     for line in wiki_text.split('\n'):
         # File:Flag_of_Albania.svg|<br />[[Wikimedia_CEE_Spring_2016/Structure/Albania|{{Label|Q222}}]]|link=[[Wikimedia_CEE_Spring_2016/Structure/Albania]]|alt=Albania
-        match = re.search(ur'\[\[Wikimedia_CEE_Spring_2016/Structure/([^\|]*?)\]\]', line, re.IGNORECASE)
+        match = re.search(ur'\[\[Wikimedia.CEE.Spring.2016/Structure/([^\|]*?)\]\]', line, re.IGNORECASE)
         if match is not None:
             mat = match.group(1).strip()
             county_list += mat.split('|')
@@ -290,6 +290,7 @@ lang_names = {'sh': 'Serbo-Croatian - srpskohrvatski jezik', 'eo': u'Esperanto',
 debug = 0
 
 countries = sorted(get_county_list())
+print 'Countries: '+str(len(countries))
 print countries
 
 if debug == 1:
@@ -319,7 +320,7 @@ for country in sorted(countries):
     q_list = list()
     country_items = list()
 
-    print '+++++++++++' + country
+    print '\n+++++++++++' + country
     qs = get_country_qs(country)
     print '+++++++++++' + str(len(qs))
 
