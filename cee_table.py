@@ -290,6 +290,7 @@ lang_names = {'sh': 'Serbo-Croatian - srpskohrvatski jezik', 'eo': u'Esperanto',
 debug = 0
 
 countries = sorted(get_county_list())
+print countries
 
 if debug == 1:
     countries = [u'Serbia']
@@ -318,11 +319,12 @@ for country in sorted(countries):
     q_list = list()
     country_items = list()
 
-    print('+++++++++++' + country)
+    print '+++++++++++' + country
     qs = get_country_qs(country)
+    print '+++++++++++' + len(qs)
 
     for q in qs:
-        print q + " ",
+        print q,
 
         r_url = "http://www.wikidata.org/w/api.php?format=json&action=wbgetentities&ids=" + q + "&props=labels|sitelinks"
 
