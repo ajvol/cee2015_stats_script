@@ -321,7 +321,7 @@ for country in sorted(countries):
 
     print '+++++++++++' + country
     qs = get_country_qs(country)
-    print '+++++++++++' + len(qs)
+    print '+++++++++++' + str(len(qs))
 
     for q in qs:
         print q,
