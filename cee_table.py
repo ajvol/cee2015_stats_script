@@ -167,12 +167,12 @@ def PublishStats():
             stats_by_lang[la]) + ' || ' + (u'▒' * rep) + '\n'
     t += u'|}\n'
 
-    t += u'=== Last new articles ===\n'
+    t += u'=== Last 500 articles ===\n'
     for i, date in enumerate(sorted(stats_by_date, reverse=True)):
         itm = date.strftime("%Y-%m-%d %H:%M:%S")
         itm += ' [[:w:'+stats_by_date[date]+']]'
         t += u'* '+ itm+'\n'
-        if i>=1000:
+        if i >= 500:
             break
 
     if debug == 0:
@@ -252,6 +252,29 @@ def get_county_list():
     return county_list
 
 
+def get_lang_list():
+    lang_list = []
+
+    q='Q22342981'
+    r_url = "http://www.wikidata.org/w/api.php?format=json&action=wbgetentities&ids="+q+"&props=sitelinks"
+
+    item_req = urllib2.Request(r_url)
+    item_resp = urllib2.build_opener().open(item_req).read()
+    item_json = json.loads(item_resp)
+
+    item_link_dict = {}
+
+    for item_link in item_json["entities"][q]["sitelinks"]:
+        item_link_lang = item_json["entities"][q]["sitelinks"][item_link]["site"]
+        item_link_lang = item_link_lang.replace('wiki', '')
+        item_link_lang = item_link_lang.replace('be_x_old', 'be-tarask')
+        if item_link_lang!='meta':
+            lang_list.append(item_link_lang)
+
+    return sorted(lang_list)
+
+
+
 try:
     f = open('./cee_cache.txt', 'r')
     cache = json.load(f)
@@ -272,7 +295,10 @@ UTF8Writer = codecs.getwriter('utf8')
 sys.stdout = UTF8Writer(sys.stdout)
 
 langs = ['az', 'be', 'be-tarask', 'bg', 'bs', 'cs', 'de', 'el', 'et', 'eo', 'hr', 'hu', 'hy', 'ka', 'lt',
-         'lv', 'mk', 'pl', 'ro', 'ru', 'sk', 'sq', 'sr', 'uk', 'sh']
+         'lv', 'mk', 'pl', 'ro', 'ru', 'tr', 'sk', 'sq', 'sr', 'uk', 'sh']
+
+langs = get_lang_list()
+
 lang_names = {'sh': 'Serbo-Croatian - srpskohrvatski jezik', 'eo': u'Esperanto', 'az': u'Azerbaijani - azərbaycan dili',
               'ba': u'Bashkir - башҡорт теле', 'be': u'Belarusian - беларуская мова',
               'be-tarask': u'Belarusian (Taraškievica) - беларуская мова (тарашкевіца)',
