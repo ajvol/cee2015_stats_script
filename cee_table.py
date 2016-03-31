@@ -311,13 +311,20 @@ lang_names = {'sh': 'Serbo-Croatian - srpskohrvatski jezik', 'eo': u'Esperanto',
               'os': u'Ossetian - ирон æвзаг', 'pl': u'Polish - polszczyzna', 'ro': u'Romanian - limba română',
               'ru': u'Russian - русский язык', 'rue': u'Rusyn - 	русин', 'sk': u'Slovak - slovenčina',
               'sl': u'Slovene - slovenščina', 'sq': u'Albanian - Shqip', 'sr': u'Serbian - српски језик',
-              'tr': u'Turkish - Türkçe', 'tt': u'Tatar - татар теле', 'uk': u'Ukrainian - українська мова'}
+              'tr': u'Turkish - Türkçe', 'tt': u'Tatar - татар теле', 'uk': u'Ukrainian - українська мова',
+              'sah': u'Sakha - саха тыла'}
+
+for la in langs:
+    if la not in lang_names:
+        lang_names[la]=la
 
 debug = 0
 
 countries = sorted(get_county_list())
 print 'Countries: '+str(len(countries))
 print countries
+print 'Languages: '+str(len(langs))
+print langs
 
 if debug == 1:
     countries = [u'Serbia']
