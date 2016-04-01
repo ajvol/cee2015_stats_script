@@ -366,10 +366,7 @@ except:
 UTF8Writer = codecs.getwriter('utf8')
 sys.stdout = UTF8Writer(sys.stdout)
 
-langs = ['az', 'be', 'be-tarask', 'bg', 'bs', 'cs', 'de', 'el', 'et', 'eo', 'hr', 'hu', 'hy', 'ka', 'lt',
-         'lv', 'mk', 'pl', 'ro', 'ru', 'tr', 'sk', 'sq', 'sr', 'uk', 'sh']
 
-langs = get_lang_list()
 
 lang_names = {'sh': 'Serbo-Croatian - srpskohrvatski jezik', 'eo': u'Esperanto', 'az': u'Azerbaijani - azərbaycan dili',
               'ba': u'Bashkir - башҡорт теле', 'be': u'Belarusian - беларуская мова',
@@ -392,15 +389,18 @@ for la in langs:
 
 debug = False
 
-countries = sorted(get_county_list())
+
+if debug:
+    langs = ['ru', 'pl', 'uk']
+    countries = [u'Serbia']
+else:
+    langs = sorted(get_lang_list())
+    countries = sorted(get_county_list())
+
 print 'Countries: '+str(len(countries))
 print countries
 print 'Languages: '+str(len(langs))
 print langs
-
-if debug:
-    countries = [u'Serbia']
-    langs = ['ru', 'pl', 'uk']
 
 # once a day full processing
 if (datetime.now().hour in [0,1]) or (debug):
