@@ -175,7 +175,7 @@ def PublishStats():
         if i >= 500:
             break
 
-    if debug == 0:
+    if not debug:
         savePage('Wikimedia_CEE_Spring_2016/Structure/Statistics', t)
     else:
         savePage('User:Botik/Stats', t)
@@ -338,7 +338,7 @@ def save_country_table(country):
 
     txt=txt+ '|}'+'\n'
 
-    if debug == 0:
+    if not debug:
         savePage('Wikimedia_CEE_Spring_2016/Structure/Statistics/'+county, txt)
     else:
         savePage('User:Botik/Stats/'+country, txt)
@@ -390,7 +390,7 @@ for la in langs:
     if la not in lang_names:
         lang_names[la]=la
 
-debug = 1
+debug = False
 
 countries = sorted(get_county_list())
 print 'Countries: '+str(len(countries))
@@ -398,12 +398,12 @@ print countries
 print 'Languages: '+str(len(langs))
 print langs
 
-if debug == 0:
+if debug:
     countries = [u'Serbia']
     langs = ['ru', 'pl', 'uk']
 
 # once a day full processing
-if (datetime.now().hour in [0,1]) or (debug == 1):
+if (datetime.now().hour in [0,1]) or (debug):
     full_processing = True
 else:
     full_processing = False
@@ -432,7 +432,7 @@ for country in sorted(countries):
     qs, topics = get_country_qs(country)
     print '+++++++++++' + str(len(qs))
 
-    if debug == 1:
+    if debug:
         qs = qs[0:5]
 
     for q in qs:
