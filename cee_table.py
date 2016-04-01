@@ -205,7 +205,7 @@ def get_country_qs(country):
         # === Culture ===
         match = re.search(ur'(===(.*)===|<h3.*>(.*)</h3>)', line, re.IGNORECASE)
         if match is not None:
-            if match.group(1) is not None:
+            if match.group(2) is not None:
                 mat = match.group(2).strip()
             else:
                 mat = match.group(3).strip()
