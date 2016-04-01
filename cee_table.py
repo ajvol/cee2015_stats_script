@@ -383,10 +383,6 @@ lang_names = {'sh': 'Serbo-Croatian - srpskohrvatski jezik', 'eo': u'Esperanto',
               'tr': u'Turkish - Türkçe', 'tt': u'Tatar - татар теле', 'uk': u'Ukrainian - українська мова',
               'sah': u'Sakha - саха тыла'}
 
-for la in langs:
-    if la not in lang_names:
-        lang_names[la]=la
-
 debug = False
 
 
@@ -401,6 +397,10 @@ print 'Countries: '+str(len(countries))
 print countries
 print 'Languages: '+str(len(langs))
 print langs
+
+for la in langs:
+    if la not in lang_names:
+        lang_names[la]=la
 
 # once a day full processing
 if (datetime.now().hour in [0,1]) or (debug):
