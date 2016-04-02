@@ -139,6 +139,8 @@ def PublishStats():
     t += u'=== New articles about countries ===\n'
     t += u'{|\n'
     s2max = max(stats_by_country.values())
+    if s2max==0:
+        s2max=max_line
     point = 1.0 * max_line / s2max
     if point > 1:
         point = 1
@@ -150,17 +152,18 @@ def PublishStats():
         t += u'|-\n'
 
         if debug:
-            count_str = str(stats_by_country[co]) + ' - [[User:Botik/Stats/'+co+'|details]]'
+            count_str = str(stats_by_country[co]) + ' - [[User:Botik/Stats/'+co+'|'+str(stats_by_country[co])+']]'
         else:
-            count_str = str(stats_by_country[co]) + ' - [[Wikimedia_CEE_Spring_2016/Structure/Statistics/'+co+'|details]]'
+            count_str = str(stats_by_country[co]) + ' - [[Wikimedia_CEE_Spring_2016/Structure/Statistics/'+co+'|'+str(stats_by_country[co])+']]'
 
-        t += u'| ' + co + ' - || '+ count_str +' || ' + (u'▒' * rep) + '\n'
-        #t += u'| ' + co + ' || ' + str(stats_by_country[co]) + ' || ' + (u'▒' * rep) + '\n'
+        t += u'| ' + co + ' || ' + count_str + ' || ' + (u'▒' * rep) + '\n'
     t += u'|}\n'
 
     t += u'=== New articles by languages ===\n'
     t += u'{|\n'
     s3max = max(stats_by_lang.values())
+    if s3max == 0:
+        s3max = max_line
     point = 1.0 * max_line / s3max
     if point > 1:
         point = 1
@@ -307,6 +310,7 @@ def get_lang_list():
         if match is not None:
             mat = match.group(1).strip()
             mat = mat.replace("'", "").strip()
+            mat = mat.replace('be_x_old', 'be-tarask')
             lang_list_from_module += mat.split(',')
             lang_list_from_module.remove('')
 
@@ -314,7 +318,7 @@ def get_lang_list():
     # from project wikidata page
     lang_list_from_wikidata = []
 
-    q='Q22342981'
+    q='Q22342981' # Wikimedia CEE Spring 2016
     r_url = "http://www.wikidata.org/w/api.php?format=json&action=wbgetentities&ids="+q+"&props=sitelinks"
 
     item_req = urllib2.Request(r_url)
@@ -330,7 +334,7 @@ def get_lang_list():
         if item_link_lang!='meta':
             lang_list_from_wikidata.append(item_link_lang)
 
-    return sorted(list(set(lang_list_from_wikidata + lang_list_from_module))
+    return sorted(list(set(lang_list_from_wikidata + lang_list_from_module)))
 
 def save_country_table(country):
     txt = u''
