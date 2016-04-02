@@ -344,7 +344,7 @@ def save_country_table(country):
     txt=txt+ '|}'+'\n'
 
     if not debug:
-        savePage('Wikimedia_CEE_Spring_2016/Structure/Statistics/'+county, txt)
+        savePage('Wikimedia_CEE_Spring_2016/Structure/Statistics/'+country, txt)
     else:
         savePage('User:Botik/Stats/'+country, txt)
 
