@@ -432,7 +432,6 @@ debug = False
 
 if debug:
     langs = ['ru', 'pl', 'uk', 'be']
-    langs = sorted(get_lang_list())
     countries = [u'Bosnia and Herzegovina']
 else:
     langs = sorted(get_lang_list())
@@ -478,12 +477,10 @@ for country in sorted(countries):
     qs, topics = get_country_qs(country)
     print '+++++++++++' + str(len(qs))
 
-    #if debug:
-    #    qs = qs[0:5]
+    if debug:
+        qs = qs[0:5]
 
     for q in qs:
-        if q not in ['Q1019094', 'Q17998075', 'Q1566083']:
-            continue
 
         print q
 
