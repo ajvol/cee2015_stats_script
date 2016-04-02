@@ -232,7 +232,7 @@ def get_country_qs(country):
             for q_el in mat.split('|'):
                 topics[q_el] = topic
 
-        elif:
+        else:
             # [[d:Q2499614|Q2499614]]
             match = re.search(ur"\[\[\:?d\:Q(\d+?)\|Q(\d+?)\]\]", line, re.IGNORECASE)
             if match is not None:
