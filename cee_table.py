@@ -130,10 +130,10 @@ def PublishStats():
     point = 1.0 * max_line / max_val
     rep = int(round(point * total2015))
     t += u'|-\n'
-    t += u'| 2015 CEE Spring articles || ' + str(total2015) + ' || ' + (u'▒' * rep) + '\n'
+    t += u'| 2015 CEE Spring articles - || ' + str(total2015) + ' || ' + (u'▒' * rep) + '\n'
     rep = int(round(point * total))
     t += u'|-\n'
-    t += u'| 2016 CEE Spring articles || ' + str(total) + ' || ' + (u'▒' * rep) + '\n'
+    t += u'| 2016 CEE Spring articles - || ' + str(total) + ' || ' + (u'▒' * rep) + '\n'
     t += u'|}\n'
 
     t += u'=== New articles about countries ===\n'
@@ -148,8 +148,14 @@ def PublishStats():
         if stats_by_country[co] > 0 and rep == 0:
             rep = 1
         t += u'|-\n'
-        #t += u'| ' + co + ' || [[Wikimedia_CEE_Spring_2016/Structure/Statistics/'+co+'|' +  str(stats_by_country[co]) + ']] || ' + (u'▒' * rep) + '\n'
-        t += u'| ' + co + ' || ' + str(stats_by_country[co]) + ' || ' + (u'▒' * rep) + '\n'
+
+        if debug:
+            count_str = str(stats_by_country[co]) + ' - [[User:Botik/Stats/'+co+'|details]]'
+        else:
+            count_str = str(stats_by_country[co]) + ' - [[Wikimedia_CEE_Spring_2016/Structure/Statistics/'+co+'|details]]'
+
+        t += u'| ' + co + ' - || '+ count_str +' || ' + (u'▒' * rep) + '\n'
+        #t += u'| ' + co + ' || ' + str(stats_by_country[co]) + ' || ' + (u'▒' * rep) + '\n'
     t += u'|}\n'
 
     t += u'=== New articles by languages ===\n'
@@ -316,13 +322,11 @@ def save_country_table(country):
     for key in sorted(langs):
         txt = txt + u'! {{H:title|' + lang_names[key] + u'|' + key.replace(u'be-tarask', u'be-t') + u'}}' + u'\n'
 
-    txt = txt + u'|-' + '\n'
-
-    for topic in big_country_table[country]:
-
+    for topic in sorted(big_country_table[country]):
+        txt = txt + u'|-' + '\n'
         txt = txt + u'| colspan="' + str(len(langs) + 2) + '" style="background:#dddddd" | ' + topic + '\n'
 
-        for label in big_country_table[country][topic]:
+        for label in sorted(big_country_table[country][topic]):
             for q in big_country_table[country][topic][label]:
                 txt = txt + u'|-' + '\n'
                 txt = txt + u'| ' + label + '\n'
@@ -379,7 +383,7 @@ lang_names = {'sh': 'Serbo-Croatian - srpskohrvatski jezik', 'eo': u'Esperanto',
               'ka': u'Georgian - ქართული', 'kk': u'Kazakh - қазақ тілі', 'lt': u'Lithuanian - lietuvių kalba',
               'lv': u'Latvian - latviešu valoda', 'mk': u'Macedonian - македонски јазик',
               'os': u'Ossetian - ирон æвзаг', 'pl': u'Polish - polszczyzna', 'ro': u'Romanian - limba română',
-              'ru': u'Russian - русский язык', 'rue': u'Rusyn - 	русин', 'sk': u'Slovak - slovenčina',
+              'ru': u'Russian - русский язык', 'rue': u'Rusyn - русин', 'sk': u'Slovak - slovenčina',
               'sl': u'Slovene - slovenščina', 'sq': u'Albanian - Shqip', 'sr': u'Serbian - српски језик',
               'tr': u'Turkish - Türkçe', 'tt': u'Tatar - татар теле', 'uk': u'Ukrainian - українська мова',
               'sah': u'Sakha - саха тыла'}
@@ -388,7 +392,8 @@ debug = False
 
 
 if debug:
-    langs = ['ru', 'pl', 'uk']
+    langs = ['ru', 'pl', 'uk', 'be']
+    langs = sorted(get_lang_list())
     countries = [u'Serbia']
 else:
     langs = sorted(get_lang_list())
@@ -404,7 +409,8 @@ for la in langs:
         lang_names[la]=la
 
 # once a day full processing
-if (datetime.now().hour in [0,1]) or (debug):
+if (datetime.now().hour in [0,1]) or (debug) or ('--full' in sys.argv):
+    print 'Full processing'
     full_processing = True
 else:
     full_processing = False
@@ -433,8 +439,8 @@ for country in sorted(countries):
     qs, topics = get_country_qs(country)
     print '+++++++++++' + str(len(qs))
 
-    if debug:
-        qs = qs[0:5]
+    #if debug:
+    #    qs = qs[0:5]
 
     for q in qs:
         print q
