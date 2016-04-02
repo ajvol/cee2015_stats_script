@@ -152,9 +152,9 @@ def PublishStats():
         t += u'|-\n'
 
         if debug:
-            count_str = str(stats_by_country[co]) + ' - [[User:Botik/Stats/'+co+'|'+str(stats_by_country[co])+']]'
+            count_str = str(stats_by_country[co]) + ' [[User:Botik/Stats/'+co+'|'+str(stats_by_country[co])+']]'
         else:
-            count_str = str(stats_by_country[co]) + ' - [[Wikimedia_CEE_Spring_2016/Structure/Statistics/'+co+'|'+str(stats_by_country[co])+']]'
+            count_str = str(stats_by_country[co]) + ' [[Wikimedia_CEE_Spring_2016/Structure/Statistics/'+co+'|'+str(stats_by_country[co])+']]'
 
         t += u'| ' + co + ' || ' + count_str + ' || ' + (u'▒' * rep) + '\n'
     t += u'|}\n'
