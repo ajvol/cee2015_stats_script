@@ -287,7 +287,32 @@ def get_county_list():
 
 
 def get_lang_list():
-    lang_list = []
+    #from Module
+    lang_list_from_module = []
+    wiki_text = ''
+
+    req = urllib2.Request(
+        'http://meta.wikimedia.org/w/api.php?format=json&action=query&prop=revisions&rvprop=content&titles=' +
+        urllib2.quote('Module:WikimediaCEETable'.encode('utf-8')) + '&continue=')
+    resp = urllib2.build_opener().open(req).read()
+    r_json = json.loads(resp)
+
+    for itm in r_json["query"]["pages"]:
+        wiki_text = r_json["query"]["pages"][itm]["revisions"][0]["*"]
+
+    mat = ''
+    for line in wiki_text.split('\n'):
+        # local langTable = { 'az','ba','be','be_x_old','bs',}
+        match = re.search(ur'langTable.*\{(.*)\}', line, re.IGNORECASE)
+        if match is not None:
+            mat = match.group(1).strip()
+            mat = mat.replace("'", "").strip()
+            lang_list_from_module += mat.split(',')
+            lang_list_from_module.remove('')
+
+
+    # from project wikidata page
+    lang_list_from_wikidata = []
 
     q='Q22342981'
     r_url = "http://www.wikidata.org/w/api.php?format=json&action=wbgetentities&ids="+q+"&props=sitelinks"
@@ -303,9 +328,9 @@ def get_lang_list():
         item_link_lang = item_link_lang.replace('wiki', '')
         item_link_lang = item_link_lang.replace('be_x_old', 'be-tarask')
         if item_link_lang!='meta':
-            lang_list.append(item_link_lang)
+            lang_list_from_wikidata.append(item_link_lang)
 
-    return sorted(lang_list)
+    return sorted(list(set(lang_list_from_wikidata + lang_list_from_module))
 
 def save_country_table(country):
     txt = u''
@@ -398,13 +423,13 @@ lang_names = {'sh': 'Serbo-Croatian - srpskohrvatski jezik', 'eo': u'Esperanto',
               'tr': u'Turkish - Türkçe', 'tt': u'Tatar - татар теле', 'uk': u'Ukrainian - українська мова',
               'sah': u'Sakha - саха тыла'}
 
-debug = False
+debug = True
 
 
 if debug:
     langs = ['ru', 'pl', 'uk', 'be']
     langs = sorted(get_lang_list())
-    countries = [u'Serbia']
+    countries = [u'Bosnia and Herzegovina']
 else:
     langs = sorted(get_lang_list())
     countries = sorted(get_county_list())
@@ -453,6 +478,9 @@ for country in sorted(countries):
     #    qs = qs[0:5]
 
     for q in qs:
+        if q not in ['Q1019094', 'Q17998075', 'Q1566083']:
+            continue
+
         print q
 
         r_url = "http://www.wikidata.org/w/api.php?format=json&action=wbgetentities&ids=" + q + "&props=labels|sitelinks"
@@ -503,7 +531,11 @@ for country in sorted(countries):
                 item_main_label = item_label_dict['en']
             else:
                 # first nonempty value, latin script first
-                item_main_label = sorted([i for i in item_label_dict.values() if len(i)>1 ])[0]
+                labels = sorted([i for i in item_label_dict.values() if len(i) > 1 ])
+                if len(labels) > 0:
+                    item_main_label = labels[0]
+                else:
+                    item_main_label = q
 
             for key in sorted(item_link_dict):
                 if (key != 'en') and (len(item_link_dict[key]) > 1):
@@ -545,20 +577,20 @@ for country in sorted(countries):
 
 print " "
 
-'''
-for tab_country in big_country_table:
-    for tab_topic in big_country_table[tab_country]:
-        for tab_label in big_country_table[tab_country][tab_topic]:
-            for tab_q in big_country_table[tab_country][tab_topic][tab_label]:
-                for tab_lang in big_country_table[tab_country][tab_topic][tab_label][tab_q]:
-                    val = big_country_table[tab_country][tab_topic][tab_label][tab_q][tab_lang][0]
-                    link = big_country_table[tab_country][tab_topic][tab_label][tab_q][tab_lang][1]
-                    if not val:
-                        val = u'NA'
-                    if not link:
-                        link = u'NA'
-                    print tab_country+' - '+tab_topic+' - '+tab_q+' - '+tab_label+' - '+tab_lang+' - '+val+' - '+link
-'''
+if debug:
+    for tab_country in big_country_table:
+        for tab_topic in big_country_table[tab_country]:
+            for tab_label in big_country_table[tab_country][tab_topic]:
+                for tab_q in big_country_table[tab_country][tab_topic][tab_label]:
+                    for tab_lang in big_country_table[tab_country][tab_topic][tab_label][tab_q]:
+                        val = big_country_table[tab_country][tab_topic][tab_label][tab_q][tab_lang][0]
+                        link = big_country_table[tab_country][tab_topic][tab_label][tab_q][tab_lang][1]
+                        if not val:
+                            val = u'NA'
+                        if not link:
+                            link = u'NA'
+                        print tab_country+' - '+tab_topic+' - '+tab_q+' - '+tab_label+' - '+tab_lang+' - '+val+' - '+link
+
 
 PublishStats()
 
