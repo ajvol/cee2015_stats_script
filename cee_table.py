@@ -210,13 +210,14 @@ def get_country_qs(country):
         # <h3 style="color:#339966;">[[File:P biology-green.png|30px]] '''b. Nature / Geography'''</h3>
         # === [[File:P agriculture-green.png|30px]] '''Economics''' ===
         # === Culture ===
-        match = re.search(ur'(===(.*)===|<h3.*>(.*)</h3>)', line, re.IGNORECASE)
+        match = re.search(ur'(==(.*)==|<h3.*>(.*)</h3>)', line, re.IGNORECASE)
         if match is not None:
             if match.group(2) is not None:
                 mat = match.group(2).strip()
             else:
                 mat = match.group(3).strip()
             mat = mat.replace("'''", "").strip()
+            mat = mat.replace("=", "").strip()
             mat = re.sub('\[\[.*\]\]', '', mat).strip()
             mat = re.sub('[a-z]\. ', '', mat).strip()
 
@@ -230,6 +231,15 @@ def get_country_qs(country):
 
             for q_el in mat.split('|'):
                 topics[q_el] = topic
+
+        elif:
+            # [[d:Q2499614|Q2499614]]
+            match = re.search(ur"\[\[\:?d\:Q(\d+?)\|Q(\d+?)\]\]", line, re.IGNORECASE)
+            if match is not None:
+                mat = match.group(1).strip()
+                qs.append('Q' + q)
+                topics['Q' + q] = topic
+
 
     return qs, topics
 
@@ -492,7 +502,8 @@ for country in sorted(countries):
             if 'en' in item_label_dict:
                 item_main_label = item_label_dict['en']
             else:
-                item_main_label = item_label_dict.values()[0]
+                # first nonempty value, latin script first
+                item_main_label = sorted([i for i in item_label_dict.values() if len(i)>1 ])[0]
 
             for key in sorted(item_link_dict):
                 if (key != 'en') and (len(item_link_dict[key]) > 1):
