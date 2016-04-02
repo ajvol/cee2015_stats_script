@@ -427,7 +427,7 @@ lang_names = {'sh': 'Serbo-Croatian - srpskohrvatski jezik', 'eo': u'Esperanto',
               'tr': u'Turkish - Türkçe', 'tt': u'Tatar - татар теле', 'uk': u'Ukrainian - українська мова',
               'sah': u'Sakha - саха тыла'}
 
-debug = True
+debug = False
 
 
 if debug:
