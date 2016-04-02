@@ -148,7 +148,8 @@ def PublishStats():
         if stats_by_country[co] > 0 and rep == 0:
             rep = 1
         t += u'|-\n'
-        t += u'| [[Wikimedia_CEE_Spring_2016/Structure/Statistics/'+co+'|' + co + ']] || ' + str(stats_by_country[co]) + ' || ' + (u'▒' * rep) + '\n'
+        #t += u'| ' + co + ' || [[Wikimedia_CEE_Spring_2016/Structure/Statistics/'+co+'|' +  str(stats_by_country[co]) + ']] || ' + (u'▒' * rep) + '\n'
+        t += u'| ' + co + ' || ' + str(stats_by_country[co]) + ' || ' + (u'▒' * rep) + '\n'
     t += u'|}\n'
 
     t += u'=== New articles by languages ===\n'
