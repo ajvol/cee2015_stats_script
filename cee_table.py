@@ -564,7 +564,7 @@ for country in sorted(countries):
                     first_edit = getFirstEdit(key, item_link_dict[key])
 
                     # new articles
-                    if (first_edit >= datetime.strptime('2017-03-21', "%Y-%m-%d")) and (first_edit <= datetime.strptime('2017-05-29', "%Y-%m-%d")):
+                    if (first_edit >= datetime.strptime('2017-03-21', "%Y-%m-%d")) and (first_edit <= datetime.strptime('2017-05-31', "%Y-%m-%d")):
                         stats_by_country[country] += 1
                         stats_by_lang[key] += 1
                         stats_by_date[first_edit] = key + ':' + item_link_dict[key]
@@ -578,7 +578,7 @@ for country in sorted(countries):
                         else:
                             last_edit = getLastEdit(key, item_link_dict[key])
 
-                        if (last_edit >= datetime.strptime('2017-03-21', "%Y-%m-%d")) and (last_edit <= datetime.strptime('2017-05-29', "%Y-%m-%d")):
+                        if (last_edit >= datetime.strptime('2017-03-21', "%Y-%m-%d")) and (last_edit <= datetime.strptime('2017-05-31', "%Y-%m-%d")):
                             # changed old article (orange)
 
                             # запоминаем, что статья уже менялась после начала конкурса
